@@ -65,11 +65,11 @@ struct state{
 };
 typedef const struct state state;
 state fsm[9] = {
-  {0x0C, 0x02, 1000, {GO_WEST, GO_WEST, WAIT_WEST, WAIT_WEST, WAIT_WEST, WAIT_WEST, WAIT_WEST, WAIT_WEST}}, // 0.go_west
-	{0x14, 0x02,  500, {GO_SOUTH, GO_SOUTH, GO_SOUTH, GO_SOUTH, GO_WALK, GO_WALK, GO_SOUTH, GO_SOUTH}}, // 1.wait_west
-	{0x21, 0x02,  1000, {GO_SOUTH, WAIT_SOUTH, GO_SOUTH, WAIT_SOUTH, WAIT_SOUTH, WAIT_SOUTH, WAIT_SOUTH, WAIT_SOUTH}}, // 2.go_south
-	{0x22, 0x02,  500, {GO_WEST, GO_WEST, GO_WEST, GO_WEST, GO_WALK, GO_WALK, GO_WALK, GO_WALK}}, // 3.wait_south
-	{0x24, 0x08, 1000, {GO_WALK, DONT_WALK_LIGHT1, DONT_WALK_LIGHT1, DONT_WALK_LIGHT1, GO_WALK, DONT_WALK_LIGHT1, DONT_WALK_LIGHT1, DONT_WALK_LIGHT1}}, // 4.go_walk
+  {0x0C, 0x02, 3000, {GO_WEST, GO_WEST, WAIT_WEST, WAIT_WEST, WAIT_WEST, WAIT_WEST, WAIT_WEST, WAIT_WEST}}, // 0.go_west
+	{0x14, 0x02,  1000, {GO_SOUTH, GO_SOUTH, GO_SOUTH, GO_SOUTH, GO_WALK, GO_WALK, GO_SOUTH, GO_SOUTH}}, // 1.wait_west
+	{0x21, 0x02,  3000, {GO_SOUTH, WAIT_SOUTH, GO_SOUTH, WAIT_SOUTH, WAIT_SOUTH, WAIT_SOUTH, WAIT_SOUTH, WAIT_SOUTH}}, // 2.go_south
+	{0x22, 0x02,  1000, {GO_WEST, GO_WEST, GO_WEST, GO_WEST, GO_WALK, GO_WALK, GO_WALK, GO_WALK}}, // 3.wait_south
+	{0x24, 0x08, 3000, {GO_WALK, DONT_WALK_LIGHT1, DONT_WALK_LIGHT1, DONT_WALK_LIGHT1, GO_WALK, DONT_WALK_LIGHT1, DONT_WALK_LIGHT1, DONT_WALK_LIGHT1}}, // 4.go_walk
 	{0x24, 0x02,  500, {WALK_LIGHT_OFF1, WALK_LIGHT_OFF1, WALK_LIGHT_OFF1, WALK_LIGHT_OFF1, WALK_LIGHT_OFF1, WALK_LIGHT_OFF1, WALK_LIGHT_OFF1, WALK_LIGHT_OFF1}}, // 5.dont_walk_light1
 	{0x24, 0x00, 500, {DONT_WALK_LIGHT2, DONT_WALK_LIGHT2, DONT_WALK_LIGHT2, DONT_WALK_LIGHT2, DONT_WALK_LIGHT2, DONT_WALK_LIGHT2, DONT_WALK_LIGHT2, DONT_WALK_LIGHT2}}, // 6.walk_light_off1
 	{0x24, 0x02, 500, {WALK_LIGHT_OFF2, WALK_LIGHT_OFF2, WALK_LIGHT_OFF2, WALK_LIGHT_OFF2, WALK_LIGHT_OFF2, WALK_LIGHT_OFF2, WALK_LIGHT_OFF2, WALK_LIGHT_OFF2}}, // 7.dont_walk_light2
@@ -89,6 +89,15 @@ int main(void){
 	initialize_port_e();
 	initialize_port_f();
 	current_state = GO_WEST; // initial state, chosen at random
+	
+	// Loop
+	while(1){
+		TRAFFIC_LIGHTS = fsm[current_state].traffic_light_output;
+		WALK_LIGHTS = fsm[current_state].walk_light_output;
+		delay_1ms(fsm[current_state].time);
+		input = SENSORS;
+		current_state = fsm[current_state].next[input];
+  }// end while loop
 }// end main()
 
 void initialize_port_b(void){
