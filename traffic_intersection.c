@@ -39,6 +39,7 @@
 
 // 2. Global Declarations Section
 void initialize_port_b(void);
+void initialize_port_f(void);
 
 // 3. Subroutines Section
 void initialize_port_b(void){
@@ -48,3 +49,11 @@ void initialize_port_b(void){
 	GPIO_PORTB_AFSEL_R &= ~0x3F;
 	GPIO_PORTB_DEN_R |= 0x3F;
 }// end initialize_port_b()
+
+void initialize_port_f(void){
+	GPIO_PORTF_AMSEL_R &= ~0xFF;
+	GPIO_PORTF_PCTL_R &= ~0x000000FF;
+	GPIO_PORTF_DIR_R |= 0xFF;
+	GPIO_PORTF_AFSEL_R &= ~0xFF;
+	GPIO_PORTF_DEN_R |= 0xFF;
+}// end initialize_port_f()
