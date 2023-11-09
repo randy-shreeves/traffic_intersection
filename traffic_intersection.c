@@ -79,6 +79,18 @@ unsigned long current_state;
 unsigned long input;
 
 // 3. Subroutines Section
+int main(void){
+	// Setup
+	volatile unsigned long delay;
+	initialize_pll();
+	SYSCTL_RCGC2_R |= 0x32;
+	delay = SYSCTL_RCGC2_R; // delay for 3-5 bus cycles for clock to stabilize
+	initialize_port_b();
+	initialize_port_e();
+	initialize_port_f();
+	current_state = GO_WEST; // initial state, chosen at random
+}// end main()
+
 void initialize_port_b(void){
 	GPIO_PORTB_AMSEL_R &= ~0x3F;
 	GPIO_PORTB_PCTL_R &= ~0x00FFFFFF;
