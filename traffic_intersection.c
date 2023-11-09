@@ -38,5 +38,13 @@
 #define SYSCTL_RCGC2_R (*((volatile unsigned long *)0x400FE108))
 
 // 2. Global Declarations Section
+void initialize_port_b(void);
 
 // 3. Subroutines Section
+void initialize_port_b(void){
+	GPIO_PORTB_AMSEL_R &= ~0x3F;
+	GPIO_PORTB_PCTL_R &= ~0x00FFFFFF;
+	GPIO_PORTB_DIR_R |= 0x3F;
+	GPIO_PORTB_AFSEL_R &= ~0x3F;
+	GPIO_PORTB_DEN_R |= 0x3F;
+}// end initialize_port_b()
