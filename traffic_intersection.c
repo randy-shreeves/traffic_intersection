@@ -36,11 +36,47 @@
 	
 // Define Clock Gating Control address
 #define SYSCTL_RCGC2_R (*((volatile unsigned long *)0x400FE108))
+	
+// Define outputs and inputs
+#define TRAFFIC_LIGHTS (*((volatile unsigned long *)0x400050FC))
+#define WALK_LIGHTS (*((volatile unsigned long *)0x40025028))
+#define SENSORS (*((volatile unsigned long *)0x4002401C))
+	
+// Define states
+#define GO_WEST 0
+#define WAIT_WEST 1
+#define GO_SOUTH 2
+#define WAIT_SOUTH 3
+#define GO_WALK 4
+#define DONT_WALK_LIGHT1 5
+#define WALK_LIGHT_OFF1 6
+#define DONT_WALK_LIGHT2 7
+#define WALK_LIGHT_OFF2 8
 
 // 2. Global Declarations Section
 void initialize_port_b(void);
 void initialize_port_f(void);
 void initialize_port_e(void);
+struct state{
+	unsigned long traffic_light_output;
+	unsigned long walk_light_output;
+	unsigned long time;
+	unsigned long next[8];
+};
+typedef const struct state state;
+state fsm[9] = {
+  {0x0C, 0x02, 1000, {GO_WEST, GO_WEST, WAIT_WEST, WAIT_WEST, WAIT_WEST, WAIT_WEST, WAIT_WEST, WAIT_WEST}}, // 0.go_west
+	{0x14, 0x02,  500, {GO_SOUTH, GO_SOUTH, GO_SOUTH, GO_SOUTH, GO_WALK, GO_WALK, GO_SOUTH, GO_SOUTH}}, // 1.wait_west
+	{0x21, 0x02,  1000, {GO_SOUTH, WAIT_SOUTH, GO_SOUTH, WAIT_SOUTH, WAIT_SOUTH, WAIT_SOUTH, WAIT_SOUTH, WAIT_SOUTH}}, // 2.go_south
+	{0x22, 0x02,  500, {GO_WEST, GO_WEST, GO_WEST, GO_WEST, GO_WALK, GO_WALK, GO_WALK, GO_WALK}}, // 3.wait_south
+	{0x24, 0x08, 1000, {GO_WALK, DONT_WALK_LIGHT1, DONT_WALK_LIGHT1, DONT_WALK_LIGHT1, GO_WALK, DONT_WALK_LIGHT1, DONT_WALK_LIGHT1, DONT_WALK_LIGHT1}}, // 4.go_walk
+	{0x24, 0x02,  500, {WALK_LIGHT_OFF1, WALK_LIGHT_OFF1, WALK_LIGHT_OFF1, WALK_LIGHT_OFF1, WALK_LIGHT_OFF1, WALK_LIGHT_OFF1, WALK_LIGHT_OFF1, WALK_LIGHT_OFF1}}, // 5.dont_walk_light1
+	{0x24, 0x00, 500, {DONT_WALK_LIGHT2, DONT_WALK_LIGHT2, DONT_WALK_LIGHT2, DONT_WALK_LIGHT2, DONT_WALK_LIGHT2, DONT_WALK_LIGHT2, DONT_WALK_LIGHT2, DONT_WALK_LIGHT2}}, // 6.walk_light_off1
+	{0x24, 0x02, 500, {WALK_LIGHT_OFF2, WALK_LIGHT_OFF2, WALK_LIGHT_OFF2, WALK_LIGHT_OFF2, WALK_LIGHT_OFF2, WALK_LIGHT_OFF2, WALK_LIGHT_OFF2, WALK_LIGHT_OFF2}}, // 7.dont_walk_light2
+	{0x24, 0x00, 500, {GO_WEST, GO_WEST, GO_SOUTH, GO_WEST, GO_WALK, GO_WEST, GO_SOUTH, GO_WEST}} // 8.walk_light_off2
+};
+unsigned long current_state;
+unsigned long input;
 
 // 3. Subroutines Section
 void initialize_port_b(void){
